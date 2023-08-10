@@ -1,0 +1,29 @@
+.row {
+display: flex;
+flex-direction: row;
+margin-bottom: 0.5vh;
+}
+
+.column {
+display: table-cell;
+flex-direction: column;
+/* vertical-align: middle; */
+/* width: 25%; */
+padding-right: 10px;
+width: 24%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+content: "";
+display: table;
+/* clear: both; */
+}
+
+.input-img {
+width: 100%;
+}
+
+model-viewer {
+width: 100%;
+}

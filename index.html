@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta property="og:image" content="static/images/pipeline.png" />
+  <!-- Facebook automatically scrapes this. Go to https://developers.facebook.com/tools/debug/ if you update and want to force Facebook to rescrape. -->
+  <meta property="og:title" content="PlankAssembly: Robust 3D Reconstruction from Three Orthographic Views with Learnt Shape Programs" />
+
+  <meta name="keywords" content="3D Reconstruction, Transformer">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PlankAssembly: Robust 3D Reconstruction from Three Orthographic Views with Learnt Shape Programs</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HKRS7BH51M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-HKRS7BH51M');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="stylesheet" href="./static/css/style.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://github.com/manycore-research">
+      <span class="icon">
+          <i class="fab fa-github"></i>
+      </span>
+      </a>
+
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More Research
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://manycore-research.github.io/faceformer">
+            faceformer
+          </a>
+          <a class="navbar-item" href="https://manycore-research.github.io/cstr">
+            cstr
+          </a>
+          <a class="navbar-item" href="https://manycore-research.github.io/PlankAssembly">
+            PlankAssembly
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<body>
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-2 publication-title">PlankAssembly: Robust 3D Reconstruction from Three Orthographic Views with Learnt Shape Programs</h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://github.com/Huenao">Wentao Hu</a><sup>1,2*</sup></span>&nbsp;&nbsp;&nbsp;&nbsp;
+              <span class="author-block">
+                <a href="https://bertjiazheng.github.io">Jia Zheng</a><sup>3*</sup></span>&nbsp;&nbsp;&nbsp;&nbsp;
+              <span class="author-block">
+                <a href="https://github.com/Elsa-zhang">Zixin Zhang</a><sup>4*</sup></span>&nbsp;&nbsp;&nbsp;&nbsp;
+              <span class="author-block">
+                <a href="https://yuan-xiaojun.github.io/Yuan-Xiaojun/">Xiaojun Yuan</a><sup>4</sup></span>&nbsp;&nbsp;&nbsp;&nbsp;
+              <span class="author-block">
+                <a href="https://sai.sysu.edu.cn/teacher/teacher01/1385356.htm">Jian Yin</a><sup>1,2</sup></span>&nbsp;&nbsp;&nbsp;&nbsp;
+              <span class="author-block">
+                <a href="https://zihan-z.github.io">Zihan Zhou</a><sup>3</sup>
+              </span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup>1</sup>Sun Yat-sen University</span>
+              <span class="author-block"><sup>2</sup>Guangdong Key Laboratory of Big Data Analysis and Processing</span>
+              <span class="author-block"><sup>3</sup><a href="https://kujiale.com">Manycore Tech Inc.</a></span>
+              <span class="author-block"><sup>4</sup>University of Electronic Science and Technology of China</span>
+            </div>
+
+            <div class="is-size-6 publication-authors">
+              <span class="author-block">*These authors contributed equally to this work</span>
+            </div>
+
+            <div class="has-text-centered">
+              <div class="publication-links">
+                <!-- Paper Link. -->
+                <span class="link-block">
+                  <a href="https://manycore-research-azure.kujiale.com/manycore-research/PlankAssembly/paper.pdf" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>Paper</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <!-- Teaser. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <img class="input-img" src="static/images/teaser.png"></img>
+          <div class="subtitle has-text-centered">
+            <p>
+              <span class="dnerf">PlankAssembly</span> reconstructs 3D CAD model from three orthographic views.
+            </p>
+          </div>
+        </div>
+      </div>
+      <!--/ Teaser. -->
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <!-- Abstract. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              In this paper, we develop a new method to automatically convert 2D line drawings from three orthographic views into 3D CAD models. Existing methods for this problem reconstruct 3D models by back-projecting the 2D observations into 3D space while maintaining explicit correspondence between the input and output. Such methods are sensitive to errors and noises in the input, thus often fail in practice where the input drawings created by human designers are imperfect. To overcome this difficulty, we leverage the attention mechanism in a Transformer-based sequence generation model to learn flexible mappings between the input and output. Further, we design shape programs which are suitable for generating the objects of interest to boost the reconstruction accuracy and facilitate CAD modeling applications. Experiments on a new benchmark dataset show that our method significantly outperforms existing ones when the inputs are noisy or incomplete.
+            </p>
+          </div>
+        </div>
+      </div>
+      <!--/ Abstract. -->
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <!-- Program. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">PlankAssembly Shape Program</h2>
+          <div class="content has-text-justified">
+            <p>
+              A cabinet is typically assembled by a list of plank models, where each plank is represented as an axis-aligned cuboid. A cuboid has six degrees of freedom, which correspond to the starting and ending coordinates along the three axes:
+              <pre><code><span style="color: magenta;">Cuboid</span>(x<sub>min</sub>, y<sub>min</sub>, z<sub>min</sub>, x<sub>max</sub>, y<sub>max</sub>, z<sub>max</sub>).</code></pre>
+              Each coordinate can either take a numerical value or be a pointer to the corresponding coordinate of another cuboid (to which it attaches to).
+            </p>
+          </div>
+          <video poster="" id="program" autoplay muted loop playsinline height="100%">
+            <source src="./static/videos/program.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+      <!--/ Program. -->
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <!-- Dataset. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">PlankAssembly Dataset</h2>
+          <div class="content has-text-justified">
+            <p>
+              The PlankAssembly Dataset consists of 26,707 shape programs derived from parametric CAD models.
+            </p>
+          </div>
+          <img class="input-img" src="static/images/dataset.png"></img>
+        </div>
+      </div>
+      <!--/ Dataset. -->
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <!-- Dataset. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">More Results</h2>
+          <div class="content has-text-centered">
+            <span class="link-block">
+              <a href="https://manycore-research-azure.kujiale.com/manycore-research/PlankAssembly/supplementary/clean_inputs.html" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon">
+                  <i class="fab fa-html5"></i>
+                </span>
+                <span>3D Reconstruction Results on Noise-free Inputs</span>
+              </a>
+            </span>
+
+            <span class="link-block">
+              <a href="https://manycore-research-azure.kujiale.com/manycore-research/PlankAssembly/supplementary/noisy_inputs.html" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon">
+                  <i class="fab fa-html5"></i>
+                </span>
+                <span>3D Reconstruction Results on Noisy Inputs</span>
+              </a>
+            </span>
+
+            <span class="link-block">
+              <a href="https://manycore-research-azure.kujiale.com/manycore-research/PlankAssembly/supplementary/visible_inputs.html" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon">
+                  <i class="fab fa-html5"></i>
+                </span>
+                <span>3D Reconstruction Results on Inputs with Visible Lines Only</span>
+              </a>
+            </span>
+
+          </div>
+        </div>
+      </div>
+      <!--/ Dataset. -->
+    </div>
+  </section>
+
+  <section class="hero is-light is-small">
+    <div class="hero-body">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">User Editing</h2>
+        </div>
+      </div>
+      <div class="container is-max-desktop">
+        <div id="results-carousel" class="carousel results-carousel">
+          <div class="item item-x">
+            <video poster="" id="x" autoplay muted loop playsinline width="100%">
+              <source src="./static/videos/scale-x.mp4" type="video/mp4">
+            </video>
+            <p class="has-text-centered">Scaling along x-axis</p>
+          </div>
+          <div class="item item-z">
+            <video poster="" id="z" autoplay muted loop playsinline width="100%">
+              <source src="./static/videos/scale-z.mp4" type="video/mp4">
+            </video>
+            <p class="has-text-centered">Scaling along z-axis</p>
+          </div>
+          <div class="item item-local">
+            <video poster="" id="lcoal" autoplay muted loop playsinline width="100%">
+              <source src="./static/videos/local.mp4" type="video/mp4">
+            </video>
+            <p class="has-text-centered">Moving a single plank model</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@inproceedings{PlankAssembly,
+  author    = {Hu, Wentao and Zheng, Jia and Zhang, Zixin and Yuan, Xiaojun and Yin, Jian and Zhou, Zihan},
+  title     = {PlankAssembly: Robust 3D Reconstruction from Three Orthographic Views with Learnt Shape Programs},
+  booktitle = {ICCV},
+  year      = {2023}
+}</code></pre>
+    </div>
+  </section>
+
+  <section class="section" id="Acknowledgements">
+    <div class="container is-max-desktop content">
+      <h2 class="title">Acknowledgements</h2>
+      This work was done during Wentao Hu's internship at Manycore Tech Inc. This work was supported in part by the Key R&amp;D Program of Zhejiang Province (2022C01025). Jian Yin is supported by the National Natural Science Foundation of China (U1911203, U2001211, U22B2060), Guangdong Basic and Applied Basic Research Foundation (2019B1515130001), Key-Area Research and Development Program of Guangdong Province (2020B0101100001).
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="content has-text-centered">
+      <a class="icon-link" href="https://arxiv.org/abs/TODO">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/manycore-research/PlankAssembly" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This webpage template is from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
