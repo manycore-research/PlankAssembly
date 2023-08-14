@@ -64,7 +64,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', metavar="DIR", default="data/data/complete",
                         help='dataset source root.')
-    parser.add_argument('--exp_path', type=str, default="lightning_logs/verison_X",
+    parser.add_argument('--exp_path', type=str, default="lightning_logs/version_X",
                         help='log path.')
     parser.add_argument('--threshold', type=float, default=0.5,
                         help="threshold")
