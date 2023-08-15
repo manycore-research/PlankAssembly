@@ -1,0 +1,101 @@
+seed_everything: 2022
+
+trainer:
+  callbacks:
+    - class_path: pytorch_lightning.callbacks.RichProgressBar
+    - class_path: pytorch_lightning.callbacks.ModelCheckpoint
+      init_args:
+        monitor: val/fmeasure
+        mode: max
+        filename: checkpoint_{epoch:03d}-precision={val/precision:.3f}-recall={val/recall:.3f}-f1={val/fmeasure:.3f}
+        auto_insert_metric_name: False
+        verbose: True
+        save_top_k: 1
+        save_last: True
+  benchmark: True
+  detect_anomaly: True
+  num_sanity_val_steps: 1
+  strategy: ddp
+  check_val_every_n_epoch: 1
+  accumulate_grad_batches: 4
+  accelerator: gpu
+  devices: 4
+  max_epochs: -1
+
+model:
+  hparams:
+    ROOT: data/data/complete/infos
+    DATASETS_TRAIN: data/splits/train.txt
+    DATASETS_VALID: data/splits/valid.txt
+    DATASETS_TEST: data/splits/test.txt
+    BATCH_SIZE: 1
+    NUM_WORKERS: 4
+    LR_HEAD: 1e-4
+    LR_BACKBONE: 1e-4
+
+    # DATA
+    DATA:
+      IMAGE_SIZE: 128
+      LINE_WIDTH: 0.005
+
+      VOCAB_SIZE: 514
+      NUM_OUTPUT_DOF: 6
+      MAX_OUTPUT_LENGTH: 128
+      NUM_BITS: 9
+
+      AUG_RATIO: 0.1
+      NOISE_RATIO: 0.15
+      NOISE_LENGTH: 0.02
+
+    # IOU Matching
+    THRESHOLD: 0.5
+
+    TOKEN:
+      END: 512
+      PAD: 513
+
+    MODEL:
+      VOXEL_DIM: 256
+      BATCH_BACKBONE2D_TIME: True
+      PIXEL_MEAN: [103.53, 116.28, 123.675]
+      PIXEL_STD: [1., 1., 1.]
+
+      BACKBONE:
+        NAME: "build_resnet_fpn_backbone"
+        FREEZE_AT: 0
+        WEIGHTS: weights/R-50.pth
+
+      RESNETS:
+        DEPTH: 50
+        OUT_FEATURES: ["res2", "res3", "res4", "res5"]
+        NUM_GROUPS: 1
+        NORM: "nnSyncBN"
+        WIDTH_PER_GROUP: 64
+        STRIDE_IN_1X1: TRUE
+        RES5_DILATION: 1
+        RES2_OUT_CHANNELS: 256
+        STEM_OUT_CHANNELS: 64
+        DEFORM_ON_PER_STAGE: [FALSE, FALSE, FALSE, FALSE]
+        DEFORM_MODULATED: FALSE
+        DEFORM_NUM_GROUPS: 1
+
+      FPN:
+        IN_FEATURES: ["res2", "res3", "res4", "res5"]
+        OUT_CHANNELS: 256
+        NORM: "nnSyncBN"
+        FUSE_TYPE: "sum"
+
+      BACKBONE3D:
+        CHANNELS: [32, 64, 128, 256, 512]
+        LAYERS: [1, 2, 3, 4, 5, 6]
+        NORM: "nnSyncBN"
+        DROP: 0.
+
+      HEAD:
+        NUM_MODEL: 512
+        NUM_HEAD: 8
+        NUM_FEEDFORWARD: 1024
+        DROPOUT: 0.2
+        ACTIVATION: relu
+        NORMALIZE_BEFORE: True
+        NUM_DECODER_LAYERS: 6
