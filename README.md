@@ -28,6 +28,11 @@
 
 <img width=500 src="assets/teaser.png">
 
+> [!NOTE]
+> This branch contains the implementation of PlankAssembly, which supports three types of inputs: (1) visible and hidden lines, (2) visible edges only, and (3) sidefaces.
+> For raster images as inputs, please refer to the [raster branch](https://github.com/manycore-research/PlankAssembly/tree/atlas).
+> For comparison with PolyGen, please refer to the [polygen branch](https://github.com/manycore-research/PlankAssembly/tree/polygen).
+
 </div>
 
 ## Setup 
