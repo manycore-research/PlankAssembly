@@ -1,0 +1,53 @@
+seed_everything: 2022
+
+trainer:
+  callbacks:
+    - class_path: pytorch_lightning.callbacks.RichProgressBar
+    - class_path: pytorch_lightning.callbacks.ModelCheckpoint
+      init_args:
+        monitor: val/fmeasure
+        mode: max
+        filename: checkpoint_{epoch:03d}-precision={val/precision:.3f}-recall={val/recall:.3f}-f1={val/fmeasure:.3f}
+        auto_insert_metric_name: False
+        verbose: True
+        save_top_k: 1
+        save_last: True
+  benchmark: True
+  detect_anomaly: True
+  num_sanity_val_steps: 0
+  strategy: ddp
+  devices: 2
+  check_val_every_n_epoch: 20
+  accelerator: gpu
+  max_epochs: 1000
+
+model:
+  hparams:
+    root: data/data/polygen/infos
+    datasets_train: data/splits/train.txt
+    datasets_valid: data/splits/valid.txt
+    datasets_test: data/splits/test.txt
+    batch_size: 32
+    num_workers: 4
+    lr: 1e-4
+
+    # data
+    data:
+      max_num_vert: 160
+      max_face_seq: 580
+
+    token:
+      PAD: 0
+      END: 1
+      NEW: 2
+
+    model:
+      num_model: 512
+      num_head: 8
+      num_feedforward: 1024
+      dropout: 0.2
+      activation: relu
+      normalize_before: True
+      num_encoder_layers: 6
+      num_decoder_layers: 6
+      vocab_size: 512

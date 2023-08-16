@@ -1,0 +1,45 @@
+seed_everything: 2022
+
+trainer:
+  callbacks:
+    - class_path: pytorch_lightning.callbacks.RichProgressBar
+  benchmark: True
+  detect_anomaly: True
+  strategy: dp
+  devices: 1
+  accelerator: gpu
+
+model:
+  hparams:
+    vertex_ckpt_path: ./checkpoints/vertex-checkpoint.ckpt
+    face_ckpt_path: ./checkpoints/face-checkpoint.ckpt
+
+    root: data/data/complete/infos
+    datasets_train: data/splits/train.txt
+    datasets_valid: data/splits/valid.txt
+    datasets_test: data/splits/test.txt
+    batch_size: 32
+    num_workers: 16
+    lr: 1e-4
+
+    # data
+    data:
+      num_line_dof: 4
+      max_line_seq: 1200
+      max_num_vert: 160
+      max_vert_seq: 480
+
+      quantization_bits: 9
+
+      aug_ratio: 0.1
+      noise_ratio: 0.15
+      noise_length: 0.02
+
+    vertex_token:
+      END: 512
+      PAD: 513
+
+    face_token:
+      PAD: 0
+      END: 1
+      NEW: 2

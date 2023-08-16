@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+preferred-citation:
+  type: conference-paper
+  collection-type: proceedings
+  title: "PlankAssembly: Robust 3D Reconstruction from Three Orthographic Views with Learnt Shape Programs"
+  authors:
+    - family-names: Hu
+      given-names: Wentao
+    - family-names: Zheng
+      given-names: Jia
+    - family-names: Zhang
+      given-names: Zixin
+    - family-names: Yuan
+      given-names: Xiaojun
+    - family-names: Yin
+      given-names: Jian
+    - family-names: Zhou
+      given-names: Zihan
+  collection-title: "Proceedings of IEEE/CVF Conference on Computer Vision (ICCV)"
+  year: 2023
