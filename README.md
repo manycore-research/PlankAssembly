@@ -77,4 +77,4 @@ python postprocess.py --exp_path path/to/lightning_log/dir
 
 ## LICENSE
 
-PlankAssembly is licensed under the [AGPL-3.0 license](LICENSE). The code snippets in the [atlas](atlas) folder and the [third_party](third_party) are available under [Apache-2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
+PlankAssembly is licensed under the [AGPL-3.0 license](LICENSE). The code snippets in the [third_party](third_party) are available under [Apache-2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
