@@ -37,7 +37,7 @@
 
 ## Setup 
 
-Our code has been tested with Python 3.8, PyTorch 1.10.0, CUDA 11.3 and PyTorch Lightning 1.7.6.
+Our code has been tested with Python 3.8, PyTorch 1.10.0, CUDA 11.3, and PyTorch Lightning 1.7.6.
 
 ### Installation
 
@@ -75,7 +75,7 @@ The dataset can be found [here](https://github.com/manycore-research/PlankAssemb
 
 The released dataset only contains 3D shape programs. To prepare the data for training and testing, please run the following commands.
 
-We use [PythonOCC](https://github.com/tpaviot/pythonocc-core) to render three-view orthogonal engineering drawing, and save them as SVG files.
+We use [PythonOCC](https://github.com/tpaviot/pythonocc-core) to render three-view orthogonal engineering drawing and save them as SVG files.
 
 ```bash
 # render complete inputs
@@ -112,7 +112,7 @@ python trainer_complete.py fit --config configs/train_complete.yaml
 Use the following command to test with a pre-trained model:
 
 ```bash
-# inference a model with complete lines as inputs
+# infer a model with complete lines as inputs
 python trainer_complete.py test \
     --config configs/train_complete.yaml \
     --ckpt_path path/to/checkpoint.ckpt \
@@ -135,11 +135,13 @@ To visualize the results, we build 3D mesh models from predictions:
 python misc/build_pred_mesh.py --exp_path path/to/lightning_log/dir
 ```
 
-Then, we use [HTML4Vision](https://github.com/mtli/HTML4Vision) to generate HTML files for mesh visualization (more details please refer to [here](https://github.com/mtli/HTML4Vision/#3d-models)):
+Then, we use [HTML4Vision](https://github.com/mtli/HTML4Vision) to generate HTML files for mesh visualization (please refer to [here](https://github.com/mtli/HTML4Vision/#3d-models) for more details):
 
 ```bash
 python misc/build_html.py --exp_path path/to/lightning_log/dir
 ```
+
+The 2D images presented in our paper are rendered using [bpy-visualization-utils](https://github.com/davidstutz/bpy-visualization-utils). 
 
 ## Model Checkpoints
 
