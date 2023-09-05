@@ -21,7 +21,7 @@
 </h4>
 
 <h5>
-  These authors contributed equally to this work.
+  *These authors contributed equally to this work.
 </h5>
 
 [![arXiv](http://img.shields.io/badge/arXiv-2308.05744-B31B1B.svg)](https://arxiv.org/abs/2308.05744)
