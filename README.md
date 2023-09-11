@@ -71,11 +71,11 @@ pip install numpy shapely svgwrite svgpathtools trimesh setuptools==59.5.0 html4
 
 ### Dataset
 
-The dataset can be found [here](https://github.com/manycore-research/PlankAssembly/wiki/Dataset). Please download the data first, then unzip the data in the project workspace.
+The dataset can be found [Github wiki page](https://github.com/manycore-research/PlankAssembly/wiki/Dataset) or [Huggingface](https://huggingface.co/datasets/manycore-research/PlankAssembly). Please download the data first, then unzip the data in the project workspace.
 
 The released dataset only contains 3D shape programs. To prepare the data for training and testing, please run the following commands.
 
-We use [PythonOCC](https://github.com/tpaviot/pythonocc-core) to render three-view orthogonal engineering drawing and save them as SVG files.
+We use [PythonOCC](https://github.com/tpaviot/pythonocc-core) to render three-view orthogonal engineering drawings and save them as SVG files.
 
 ```bash
 # render complete inputs
