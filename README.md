@@ -71,7 +71,7 @@ pip install numpy shapely svgwrite svgpathtools trimesh setuptools==59.5.0 html4
 
 ### Dataset
 
-The dataset can be found [Github wiki page](https://github.com/manycore-research/PlankAssembly/wiki/Dataset) or [Huggingface](https://huggingface.co/datasets/manycore-research/PlankAssembly). Please download the data first, then unzip the data in the project workspace.
+The dataset can be found on [Hugging Face Datasets](https://huggingface.co/datasets/manycore-research/PlankAssembly). Please download the data first, then unzip the data in the project workspace.
 
 The released dataset only contains 3D shape programs. To prepare the data for training and testing, please run the following commands.
 
