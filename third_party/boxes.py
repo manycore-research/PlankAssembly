@@ -12,7 +12,7 @@ class Boxes:
     """
     This structure stores a list of boxes as a Nx6 torch.Tensor.
     It supports some common methods about boxes
-    (`area`, `clip`, `nonempty`, etc),
+    (`volume`, `clip`, `nonempty`, etc),
     and also behaves like a Tensor
     (support indexing, `to(device)`, `.device`, and iteration over all boxes)
 
@@ -48,16 +48,16 @@ class Boxes:
         # Boxes are assumed float32 and does not support to(dtype)
         return Boxes(self.tensor.to(device=device))
 
-    def area(self) -> torch.Tensor:
+    def volume(self) -> torch.Tensor:
         """
-        Computes the area of all the boxes.
+        Computes the volume of all the boxes.
 
         Returns:
-            torch.Tensor: a vector with areas of each box.
+            torch.Tensor: a vector with volumes of each box.
         """
         box = self.tensor
-        area = (box[:, 3] - box[:, 0]) * (box[:, 4] - box[:, 1]) * (box[:, 5] - box[:, 2])
-        return area
+        volume = (box[:, 3] - box[:, 0]) * (box[:, 4] - box[:, 1]) * (box[:, 5] - box[:, 2])
+        return volume
 
     def clip(self, box_size: Tuple[int, int, int]) -> None:
         """
@@ -197,7 +197,7 @@ class Boxes:
 def pairwise_intersection(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
     """
     Given two lists of boxes of size N and M,
-    compute the intersection area between __all__ N x M pairs of boxes.
+    compute the intersection volume between __all__ N x M pairs of boxes.
     The box order must be (xmin, ymin, zmin, xmax, ymax, zmax)
 
     Args:
@@ -207,11 +207,11 @@ def pairwise_intersection(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
         Tensor: intersection, sized [N,M].
     """
     boxes1, boxes2 = boxes1.tensor, boxes2.tensor
-    width_height = torch.min(boxes1[:, None, 3:], boxes2[:, 3:]) - torch.max(
-        boxes1[:, None, :3], boxes2[:, :3])     # [N,M,2]
+    length_width_height = torch.min(boxes1[:, None, 3:], boxes2[:, 3:]) - torch.max(
+        boxes1[:, None, :3], boxes2[:, :3])     # [N,M,3]
 
-    width_height.clamp_(min=0)                  # [N,M,2]
-    intersection = width_height.prod(dim=2)     # [N,M]
+    length_width_height.clamp_(min=0)               # [N,M,3]
+    intersection = length_width_height.prod(dim=2)  # [N,M]
     return intersection
 
 
@@ -229,14 +229,14 @@ def pairwise_iou(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
     Returns:
         Tensor: IoU, sized [N,M].
     """
-    area1 = boxes1.area()  # [N]
-    area2 = boxes2.area()  # [M]
+    volume1 = boxes1.volume()   # [N]
+    volume2 = boxes2.volume()   # [M]
     inter = pairwise_intersection(boxes1, boxes2)
 
     # handle empty boxes
     iou = torch.where(
         inter > 0,
-        inter / (area1[:, None] + area2 - inter),
+        inter / (volume1[:, None] + volume2 - inter),
         torch.zeros(1, dtype=inter.dtype, device=inter.device),
     )
     return iou
@@ -244,7 +244,7 @@ def pairwise_iou(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
 
 def pairwise_ioa(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
     """
-    Similar to :func:`pariwise_iou` but compute the IoA (intersection over boxes2 area).
+    Similar to :func:`pariwise_iou` but compute the IoA (intersection over boxes2 volume).
 
     Args:
         boxes1,boxes2 (Boxes): two `Boxes`. Contains N & M boxes, respectively.
@@ -252,12 +252,12 @@ def pairwise_ioa(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
     Returns:
         Tensor: IoA, sized [N,M].
     """
-    area2 = boxes2.area()  # [M]
+    volume2 = boxes2.volume()  # [M]
     inter = pairwise_intersection(boxes1, boxes2)
 
     # handle empty boxes
     ioa = torch.where(
-        inter > 0, inter / area2, torch.zeros(1, dtype=inter.dtype, device=inter.device)
+        inter > 0, inter / volume2, torch.zeros(1, dtype=inter.dtype, device=inter.device)
     )
     return ioa
 
@@ -279,12 +279,12 @@ def matched_pairwise_iou(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
     ), "boxlists should have the same" "number of entries, got {}, {}".format(
         len(boxes1), len(boxes2)
     )
-    area1 = boxes1.area()  # [N]
-    area2 = boxes2.area()  # [N]
+    volume1 = boxes1.volume()  # [N]
+    volume2 = boxes2.volume()  # [N]
     box1, box2 = boxes1.tensor, boxes2.tensor
     lt = torch.max(box1[:, :3], box2[:, :3])  # [N,3]
     rb = torch.min(box1[:, 3:], box2[:, 3:])  # [N,3]
     wh = (rb - lt).clamp(min=0)  # [N,3]
     inter = wh[:, 0] * wh[:, 1]  # [N]
-    iou = inter / (area1 + area2 - inter)  # [N]
+    iou = inter / (volume1 + volume2 - inter)  # [N]
     return iou
