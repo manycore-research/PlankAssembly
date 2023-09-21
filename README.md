@@ -89,7 +89,7 @@ python dataset/render_visible_svg.py
 Then, pack the input line drawings and output shape programs into JSON files.
 
 ```bash
-python dataset/prepare_info.py --root path/to/data/root
+python dataset/prepare_info.py --data_path path/to/data/root
 ```
 
 To visualize the 3D model, we could generate the ground-truth 3D meshes from shape.
