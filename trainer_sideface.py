@@ -68,7 +68,7 @@ class SidefaceTrainer(Trainer):
                 valid_mask = torch.all(torch.abs(pred[1:, 3:] - pred[1:, :3]) != 0, dim=1)
                 valid_pred = torch.concat((pred[:1], pred[1:][valid_mask]))
 
-                prec, rec, f1, _, _ = self.matcher(valid_pred[1:], gt[1:])
+                prec, rec, f1, = self.matcher(valid_pred[1:], gt[1:])
                 self.criterion.update(prec, rec, f1)
 
                 pred = valid_pred.cpu().numpy().reshape(-1, 6).tolist()

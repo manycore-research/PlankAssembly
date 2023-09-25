@@ -22,7 +22,7 @@ class Trainer(pl.LightningModule):
         super().__init__()
 
         self.save_hyperparameters(hparams)
-        
+
         cfg = CfgNode(hparams)
         self.cfg = cfg
 
@@ -78,7 +78,7 @@ class Trainer(pl.LightningModule):
             # filter invalid prediction
             valid_mask = torch.all(torch.abs(pred[1:, 3:] - pred[1:, :3]) != 0, dim=1)
 
-            prec, rec, f1, _, _ = self.matcher(pred[1:][valid_mask], gt[1:])
+            prec, rec, f1 = self.matcher(pred[1:][valid_mask], gt[1:])
             self.criterion.update(prec, rec, f1)
 
     def validation_epoch_end(self, batch):
