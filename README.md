@@ -25,6 +25,7 @@
 </h5>
 
 [![arXiv](http://img.shields.io/badge/arXiv-2308.05744-B31B1B.svg)](https://arxiv.org/abs/2308.05744)
+[![Conference](https://img.shields.io/badge/ICCV-2023-4b44ce.svg)](https://openaccess.thecvf.com/content/ICCV2023/html/Hu_PlankAssembly_Robust_3D_Reconstruction_from_Three_Orthographic_Views_with_Learnt_ICCV_2023_paper.html)
 
 <img width=500 src="assets/teaser.png">
 
