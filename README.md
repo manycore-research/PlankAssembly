@@ -51,7 +51,7 @@ python trainer.py fit --config configs/train.yaml
 
 ## Testing
 
-Use the following command to test with our pretrained model ([weights](https://manycore-research-azure.kujiale.com/manycore-research/PlankAssembly/models/line_complete-checkpoint_999-precision\=0.944-recall\=0.934-f1\=0.938.ckpt)) or your own checkpoint:
+Use the following command to test with our pretrained model ([weights](https://manycore-research-azure.kujiale.com/manycore-research/PlankAssembly/models/atlas-checkpoint_049-precision=0.808-recall=0.773-f1=0.787.ckpt)) or your own checkpoint:
 
 ```bash
 # inference a model with complete lines as inputs
