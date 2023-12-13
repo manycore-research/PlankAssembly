@@ -45,7 +45,6 @@ Please follow the instructions in the [main branch](https://github.com/manycore-
 Follow the training steps of Atlas, download their provided pretrained resnet50 [weights](https://drive.google.com/file/d/15x8k-YOs_65N35CJafoJAPiftyX4Lx5w/view?usp=sharing) and unzip it. Then, use the following command to train a model from scratch:
 
 ```bash
-# train a model with complete lines as inputs
 python trainer.py fit --config configs/train.yaml
 ```
 
@@ -54,7 +53,6 @@ python trainer.py fit --config configs/train.yaml
 Use the following command to test with our pretrained model ([weights](https://manycore-research-azure.kujiale.com/manycore-research/PlankAssembly/models/atlas-checkpoint_049-precision=0.808-recall=0.773-f1=0.787.ckpt)) or your own checkpoint:
 
 ```bash
-# inference a model with complete lines as inputs
 python trainer.py test \
     --config configs/train.yaml \
     --ckpt_path path/to/checkpoint.ckpt \
