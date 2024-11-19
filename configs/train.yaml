@@ -1,6 +1,12 @@
 seed_everything: 2022
 
 trainer:
+  logger:
+    - class_path: pytorch_lightning.loggers.tensorboard.TensorBoardLogger
+      init_args:
+        save_dir: /logs
+        name: ""
+        version: ""
   callbacks:
     - class_path: pytorch_lightning.callbacks.RichProgressBar
     - class_path: pytorch_lightning.callbacks.ModelCheckpoint
@@ -13,9 +19,8 @@ trainer:
         save_top_k: 1
         save_last: True
   benchmark: True
-  detect_anomaly: True
   num_sanity_val_steps: 0
-  strategy: ddp
+  strategy: ddp_find_unused_parameters_true
   check_val_every_n_epoch: 20
   accelerator: gpu
   devices: 4
@@ -23,10 +28,10 @@ trainer:
 
 model:
   hparams:
-    ROOT: data/data/visible/infos
-    DATASETS_TRAIN: data/splits/train.txt
-    DATASETS_VALID: data/splits/valid.txt
-    DATASETS_TEST: data/splits/test.txt
+    ROOT: /seaweedfs/training/dataset/qunhe/PlankAssembly/data/complete/infos
+    DATASETS_TRAIN: /seaweedfs/training/dataset/qunhe/PlankAssembly/splits/train.txt
+    DATASETS_VALID: /seaweedfs/training/dataset/qunhe/PlankAssembly/splits/valid.txt
+    DATASETS_TEST: /seaweedfs/training/dataset/qunhe/PlankAssembly/splits/test.txt
     BATCH_SIZE: 16
     NUM_WORKERS: 4
     LR: 1e-4
@@ -38,13 +43,15 @@ model:
       VOCAB_SIZE: 514
       NUM_VIEW: 3
       NUM_TYPE: 2
-      MAX_INPUT_LENGTH: 1000
+      MAX_INPUT_LENGTH: 1200
       MAX_OUTPUT_LENGTH: 128
       NUM_BITS: 9
 
       AUG_RATIO: 0.1
       NOISE_RATIO: 0.15
       NOISE_LENGTH: 0.02
+
+      IMAGE_SIZE: 512
 
     # IOU Matching
     THRESHOLD: 0.5
@@ -54,11 +61,12 @@ model:
       PAD: 513
 
     MODEL:
+      IMAGE_MODEL: tiny_vit_21m_512.dist_in22k_ft_in1k
       NUM_MODEL: 512
       NUM_HEAD: 8
       NUM_FEEDFORWARD: 1024
       DROPOUT: 0.2
       ACTIVATION: relu
       NORMALIZE_BEFORE: True
-      NUM_ENCODER_LAYERS: 6
       NUM_DECODER_LAYERS: 6
+      PRETRAINED: True

@@ -1,15 +1,49 @@
 # Copyright (c) Manycore Tech Inc. and its affiliates. All Rights Reserved
 import json
 import os
-import shapely
+from io import BytesIO
 
+import jsonlines
 import numpy as np
+import shapely
+import svgwrite
 import torch
+from cairosvg import svg2png
+from PIL import Image
+from torchvision import transforms
 
-from plankassembly.datasets.data_utils import quantize_values, add_noise
+from plankassembly.datasets.data_utils import add_noise, quantize_values
+
+IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 
 
-class LineDataset(torch.utils.data.Dataset):
+def convert_svg_to_png(lines, types, image_size=224, line_width=0.01):
+    dwg = svgwrite.Drawing()
+    dwg.viewbox(-1, -1, 2, 2)
+    dwg.defs.add(dwg.style(".vectorEffectClass {vector-effect: non-scaling-stroke;}"))
+
+    for line, line_type in zip(lines, types):
+
+        svg = svgwrite.shapes.Line(line[:2], line[2:], fill="none", class_='vectorEffectClass')
+        svg.stroke("black", width=line_width)
+
+        if line_type == 1:
+            svg.dasharray([line_width*10, line_width*10])
+
+        dwg.add(svg)
+
+    image = svg2png(
+        bytestring=dwg.tostring(),
+        output_width=image_size,
+        output_height=image_size,
+        background_color='white',
+    )
+
+    return image
+
+
+class ImageDataset(torch.utils.data.Dataset):
 
     def __init__(self, root, info_files, token, cfg, augmentation=False):
 
@@ -27,6 +61,18 @@ class LineDataset(torch.utils.data.Dataset):
         self.aug_ratio = cfg.AUG_RATIO
         self.noise_ratio = cfg.NOISE_RATIO
         self.noise_length = cfg.NOISE_LENGTH
+        self.image_size = cfg.IMAGE_SIZE
+        self.view_size = self.image_size // 2
+        self.line_width = cfg.get('LINE_WIDTH', 0.01)
+
+        image_mean = cfg.IMAGE_MEAN if cfg.get('IMAGE_MEAN') else IMAGENET_DEFAULT_MEAN
+        image_std = cfg.IMAGE_STD if cfg.get('IMAGE_STD') else IMAGENET_DEFAULT_STD
+
+        self.transform = transforms.Compose([
+            transforms.Resize(self.image_size, interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=image_mean, std=image_std)
+        ])
 
     def __len__(self):
         return len(self.info_files)
@@ -82,6 +128,27 @@ class LineDataset(torch.utils.data.Dataset):
 
         return inputs
 
+    def prepare_input_frames(self, lines, views, types):
+        
+        canvas = Image.new("RGB", (self.image_size, self.image_size), (255, 255, 255))
+        for view_index in range(3):
+
+            mask = views == view_index
+
+            image_bytes = convert_svg_to_png(
+                lines[mask], types[mask], self.view_size, self.line_width)
+            stream = BytesIO(image_bytes)
+            image = Image.open(stream)
+
+            if view_index == 0:
+                canvas.paste(image, (0, self.view_size))
+            elif view_index == 1:
+                canvas.paste(image, (0, 0))
+            else:
+                canvas.paste(image, (self.view_size, self.view_size))
+
+        return canvas
+
     def prepare_output_sequence(self, planks, attach):
         # output
         value = quantize_values(planks, self.num_bits)
@@ -131,12 +198,17 @@ class LineDataset(torch.utils.data.Dataset):
                 linestrings, views, types, self.noise_ratio, self.noise_length)
 
             lines = shapely.bounds(linestrings)
+        
+        lines = np.array(lines, dtype='float')
+        views = np.array(views, dtype='long')
+        types = np.array(types, dtype='long')
 
-        inputs = self.prepare_input_sequence(lines, views, types)
+        image = self.prepare_input_frames(lines, views, types)
+        image = self.transform(image)
 
         outputs = self.prepare_output_sequence(planks, attach)
 
         # construct batch data
-        batch = {'name': name, **inputs, **outputs}
+        batch = {'name': name, 'image': image, **outputs}
 
         return batch

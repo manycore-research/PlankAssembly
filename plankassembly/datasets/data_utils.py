@@ -1,6 +1,29 @@
 # Copyright (c) Manycore Tech Inc. and its affiliates. All Rights Reserved
+import os
+
 import shapely
 import numpy as np
+
+
+def parse_splits_list(splits):
+    """ Returns a list of info_file paths
+    Args:
+        splits (list of strings): each item is a path to a .json file 
+            or a path to a .txt file containing a list of paths to .json's.
+    """
+
+    if isinstance(splits, str):
+        splits = splits.split()
+    info_files = []
+    for split in splits:
+        ext = os.path.splitext(split)[1]
+        if ext=='.json':
+            info_files.append(split)
+        elif ext=='.txt':
+            info_files += [info_file.rstrip() for info_file in open(split, 'r')]
+        else:
+            raise NotImplementedError('%s not a valid info_file type'%split)
+    return info_files
 
 
 def quantize_values(verts, n_bits=9):

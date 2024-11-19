@@ -1,26 +1,25 @@
 # Copyright (c) Manycore Tech Inc. and its affiliates. All Rights Reserved
 import math
 
+import timm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import (TransformerDecoder, TransformerDecoderLayer,
-                      TransformerEncoder, TransformerEncoderLayer)
+from torch.nn import TransformerDecoder, TransformerDecoderLayer
 
 
 class PlankModel(nn.Module):
 
     def __init__(self,
+                 image_model='vit_base_patch16_siglip_512',
+                 pretrained=True,
                  num_model=512,
                  num_head=8,
                  num_feedforward=1024,
                  dropout=0.1,
                  activation="relu",
                  normalize_before=True,
-                 num_encoder_layers=6,
                  num_decoder_layers=6,
-                 num_view=3,
-                 num_type=2,
                  num_input_dof=4,
                  num_output_dof=6,
                  max_input_length=400,
@@ -44,23 +43,13 @@ class PlankModel(nn.Module):
         self.token = token
 
         # input sequence
-        self.input_embeddings = nn.ModuleDict({
-            'input_value': nn.Embedding(vocab_size, num_model),
-            'input_pos': nn.Embedding(max_num_input, num_model),
-            'input_coord': nn.Embedding(num_input_dof, num_model),
-            'input_view': nn.Embedding(num_view, num_model),
-            'input_type': nn.Embedding(num_type, num_model),
-        })
+        self.input_embeddings = nn.Embedding(vocab_size, num_model)
+
+        self.image_encoder, self.image_proj = self.init_image_model(image_model, pretrained, num_model)
 
         # output sequence
         self.query_coord_embedding = nn.Embedding(num_output_dof, num_model)
         self.query_pos_embedding = nn.Embedding(max_num_output, num_model)
-
-        # Transformer encoder
-        encoder_layers = TransformerEncoderLayer(
-            num_model, num_head, num_feedforward, dropout, activation, normalize_before, batch_first=True)
-        encoder_norm = nn.LayerNorm(num_model) if normalize_before else None
-        self.encoder = TransformerEncoder(encoder_layers, num_encoder_layers, encoder_norm)
 
         # transformer decoder
         decoder_layers = TransformerDecoderLayer(
@@ -73,14 +62,11 @@ class PlankModel(nn.Module):
         self.pointer_head = nn.Linear(num_model, num_model)   
         self.switch_head = nn.Linear(num_model, 1)
 
-        self._reset_parameters()
-
-    def _reset_parameters(self):
-        """Initiate parameters in the transformer model."""
-
-        for p in self.parameters():
-            if p.dim() > 1:
-                nn.init.xavier_uniform_(p)
+    def init_image_model(self, image_model, pretrained, d_model):
+        image_encoder = timm.create_model(
+            image_model, pretrained, num_classes=0)
+        image_proj = nn.Linear(image_encoder.num_features, d_model)
+        return image_encoder, image_proj
 
     def _generate_square_subsequent_mask(self, sz):
         r"""Generate a square mask for the sequence. The masked positions are filled with float('-inf').
@@ -100,16 +86,12 @@ class PlankModel(nn.Module):
         mask[:6, :] = 0
         return mask[:sz, :sz]
 
-    def _embed_input(self, inputs):
-        """Embeds flat input and adds position and coordinate information."""
-
-        input_embeds = 0
-        for key, value in inputs.items():
-            if 'mask' in key:
-                continue
-            input_embeds += self.input_embeddings[key](value)
-
-        return input_embeds
+    def _embed_image(self, image):
+        image_embeds = self.image_encoder.forward_features(image)
+        image_embeds = image_embeds.flatten(2)
+        image_embeds = image_embeds.transpose(1, 2)
+        image_embeds = self.image_proj(image_embeds)
+        return image_embeds
 
     def _embed_output(self, output):
         """Embeds flat input and adds position and coordinate information."""
@@ -117,7 +99,7 @@ class PlankModel(nn.Module):
         device = output.device
         batch_size, num_output_length = output.size(0), output.size(1)
 
-        value_embeds = self.input_embeddings['input_value'](output)
+        value_embeds = self.input_embeddings(output)
 
         coords = torch.remainder(
             torch.arange(num_output_length, device=device), self.num_output_dof)
@@ -190,28 +172,23 @@ class PlankModel(nn.Module):
     def train_step(self, batch):
         """Pass batch through plank model and get log probabilities under model."""
 
-        inputs = {key:value for key, value in batch.items() if key[:5]=='input'}
-
-        input_mask = batch['input_mask']
+        input_image = batch['image']
         output_value = batch['output_value']
         output_label = batch['output_label']
         output_mask = batch['output_mask']
 
         # embed input
-        input_embeds = self._embed_input(inputs)
+        input_embeds = self._embed_image(input_image)
 
         # embed output
         output_embeds = self._embed_output(output_value[:, :-1])
-
-        memory = self.encoder(input_embeds, src_key_padding_mask=input_mask)
 
         # tgt mask
         tgt_mask = self._generate_square_subsequent_mask(output_embeds.size(1)).to(input_embeds.device)
 
         # pass through decoder
-        hiddens = self.decoder(output_embeds, memory, tgt_mask=tgt_mask,
-                               tgt_key_padding_mask=output_mask,
-                               memory_key_padding_mask=input_mask)
+        hiddens = self.decoder(output_embeds, input_embeds, tgt_mask=tgt_mask,
+                               tgt_key_padding_mask=output_mask)
 
         # create categorical distribution
         dists = self._create_dist(hiddens)
@@ -267,16 +244,13 @@ class PlankModel(nn.Module):
     def eval_step(self, batch):
         """Autoregressive sampling."""
 
-        inputs = {key:value for key, value in batch.items() if key[:5]=='input'}
-        input_mask = inputs['input_mask']
+        input_image = batch['image']
 
         # embed inputs
-        input_embeds = self._embed_input(inputs)
+        input_embeds = self._embed_image(input_image)
 
         batch_size = len(input_embeds)
         device = input_embeds.device
-
-        memory = self.encoder(input_embeds, src_key_padding_mask=input_mask)
 
         output = torch.empty((batch_size, 0), dtype=torch.long, device=device)
         attach = torch.empty((batch_size, 0), dtype=torch.long, device=device)
@@ -290,8 +264,7 @@ class PlankModel(nn.Module):
             tgt_mask = self._generate_square_subsequent_mask(output.size(1)+1).to(device)
 
             # pass through decoder
-            hiddens = self.decoder(output_embeds, memory, tgt_mask=tgt_mask,
-                                   memory_key_padding_mask=input_mask)
+            hiddens = self.decoder(output_embeds, input_embeds, tgt_mask=tgt_mask)
 
             # create categorical distribution
             dists = self._create_dist(hiddens)
@@ -332,11 +305,11 @@ class PlankModel(nn.Module):
 
 def build_model(cfg):
     return PlankModel(
+        cfg.MODEL.IMAGE_MODEL, cfg.MODEL.PRETRAINED,
         cfg.MODEL.NUM_MODEL, cfg.MODEL.NUM_HEAD,
         cfg.MODEL.NUM_FEEDFORWARD, cfg.MODEL.DROPOUT,
         cfg.MODEL.ACTIVATION, cfg.MODEL.NORMALIZE_BEFORE,
-        cfg.MODEL.NUM_ENCODER_LAYERS, cfg.MODEL.NUM_DECODER_LAYERS,
-        cfg.DATA.NUM_VIEW, cfg.DATA.NUM_TYPE,
+        cfg.MODEL.NUM_DECODER_LAYERS,
         cfg.DATA.NUM_INPUT_DOF, cfg.DATA.NUM_OUTPUT_DOF, 
         cfg.DATA.MAX_INPUT_LENGTH, cfg.DATA.MAX_OUTPUT_LENGTH,
         cfg.DATA.VOCAB_SIZE, cfg.TOKEN

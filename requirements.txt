@@ -1,0 +1,13 @@
+numpy
+timm
+omegaconf
+lightning
+scipy
+tensorboard
+shapely
+svgpathtools
+rich
+cairosvg
+svgwrite
+jsonlines
+jsonargparse[signatures]>=4.27.7

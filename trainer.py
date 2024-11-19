@@ -2,15 +2,16 @@
 import json
 import os
 
-import numpy as np
 import pytorch_lightning as pl
 import torch
-from detectron2.config import CfgNode
+from omegaconf import OmegaConf
 from pytorch_lightning.cli import LightningCLI
 from torch.utils.data import DataLoader
 
-from dataset.data_utils import parse_splits_list
-from plankassembly.datasets import LineDataset
+torch.set_float32_matmul_precision('high')
+
+from plankassembly.datasets.data_utils import parse_splits_list
+from plankassembly.datasets import ImageDataset
 from plankassembly.metric import build_criterion
 from plankassembly.models import build_model
 from third_party.matcher import build_matcher
@@ -23,7 +24,7 @@ class Trainer(pl.LightningModule):
 
         self.save_hyperparameters(hparams)
 
-        cfg = CfgNode(hparams)
+        cfg = OmegaConf.create(hparams)
         self.cfg = cfg
 
         self.model = build_model(cfg)
@@ -34,7 +35,7 @@ class Trainer(pl.LightningModule):
 
     def train_dataloader(self):
         info_files = parse_splits_list(self.cfg.DATASETS_TRAIN)
-        dataset = LineDataset(
+        dataset = ImageDataset(
             self.cfg.ROOT, info_files, self.cfg.TOKEN, self.cfg.DATA, True)
         dataloader = DataLoader(
             dataset, batch_size=self.cfg.BATCH_SIZE,
@@ -44,7 +45,7 @@ class Trainer(pl.LightningModule):
 
     def val_dataloader(self):
         info_files = parse_splits_list(self.cfg.DATASETS_VALID)
-        dataset = LineDataset(
+        dataset = ImageDataset(
             self.cfg.ROOT, info_files, self.cfg.TOKEN, self.cfg.DATA)
         dataloader = DataLoader(
             dataset, batch_size=self.cfg.BATCH_SIZE,
@@ -53,7 +54,7 @@ class Trainer(pl.LightningModule):
 
     def test_dataloader(self):
         info_files = parse_splits_list(self.cfg.DATASETS_TEST)
-        dataset = LineDataset(
+        dataset = ImageDataset(
             self.cfg.ROOT, info_files, self.cfg.TOKEN, self.cfg.DATA)
         dataloader = DataLoader(
             dataset, batch_size=self.cfg.BATCH_SIZE,
@@ -81,7 +82,7 @@ class Trainer(pl.LightningModule):
             prec, rec, f1 = self.matcher(pred[1:][valid_mask], gt[1:])
             self.criterion.update(prec, rec, f1)
 
-    def validation_epoch_end(self, batch):
+    def on_validation_epoch_end(self):
         prec, rec, f1 = self.criterion.compute()
 
         self.log('val/precision', prec, logger=True, sync_dist=True)
@@ -117,7 +118,7 @@ class Trainer(pl.LightningModule):
                     "fmeasure": f1.item(),
                 }, f, indent=4, separators=(', ', ': '))
 
-    def test_epoch_end(self, batch):
+    def on_test_epoch_end(self):
         prec, rec, f1 = self.criterion.compute()
 
         self.log('test/precision', prec, logger=True, sync_dist=True)
@@ -130,4 +131,7 @@ class Trainer(pl.LightningModule):
 
 
 if __name__ == '__main__':
-    cli = LightningCLI(Trainer)
+    cli = LightningCLI(
+        Trainer,
+        save_config_kwargs={"overwrite": True}
+    )
