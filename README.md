@@ -32,6 +32,9 @@
 </div>
 
 > [!NOTE]
+> In our follow-up work, [CAD2Program](https://manycore-research.github.io/CAD2Program), we discovered that a modern vision models (e.g., ViT) can understand engineering drawings. For detailed implementation, please check [vit branch](https://github.com/manycore-research/PlankAssembly/tree/vit). 
+
+> [!NOTE]
 > This branch contains the implementation of PlankAssembly, which supports three types of inputs: (1) visible and hidden lines, (2) visible edges only, and (3) sidefaces.
 > For raster images as inputs, please refer to the [raster branch](https://github.com/manycore-research/PlankAssembly/tree/atlas).
 > For comparison with PolyGen, please refer to the [polygen branch](https://github.com/manycore-research/PlankAssembly/tree/polygen).
